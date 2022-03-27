@@ -1,0 +1,309 @@
+
+import datetime
+import time
+
+import pyttsx3
+import requests
+import random
+from requests.sessions import extract_cookies_to_jar
+import speech_recognition as sr
+import datetime
+import os
+import cv2
+import wikipedia
+import webbrowser
+import sys
+import pyjokes
+import pyautogui
+import pywhatkit
+from bs4 import BeautifulSoup
+from pywikihow import search_wikihow
+import psutil
+
+engine = pyttsx3.init('sapi5')
+voices = engine.getProperty('voices')
+#print(voices[0].id)
+engine.setProperty('voices', voices[1].id)
+engine.setProperty('rate', 180)
+
+def speak(aduio):
+    engine.say(aduio)
+    engine.runAndWait()
+
+def takcommand():
+    r = sr.Recognizer()
+    with sr.Microphone() as source:
+        print("listening...")
+        r.pause_threshold = 1
+        audio = r.listen(source, timeout=0, phrase_time_limit=3)
+
+        try:
+            print("recognizing...")
+            query = r.recognize_google(audio, language='en-in')
+            print(f"user said: {query}")
+
+        except Exception as e:
+            # speak("say that again please...")
+            return "none"
+        query = query.lower()
+        return query
+
+def wish():
+    hour = int(datetime.datetime.now().hour)
+
+    if hour >= 0 and hour <= 12:
+        speak(" Good Morning Jayanth")
+    elif hour > 12 and hour < 18:
+        speak("Good Afternoon Jayanth ")
+    else:
+        speak("Good evening Jayanth")
+
+def news():
+    main_url = 'https://newsapi.org/v2/top-headlines?sources=techcrunch&apiKey=5a498c8ba89b4561b88b08ba7bb763b5'
+    main_page = requests.get(main_url).json()
+    print(main_page)
+    articles = main_page["articles"]
+    print(articles)
+    head = []
+    day = ["first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "ninth", "tenth"]
+    for ar in articles:
+        head.append(ar["title"])
+    for i in range(len(day)):
+        # print(f"today's {day[i]} news is:", head[i])
+        speak(f"today's {day[i]} news is: head[i]")
+
+def TaskExecution():
+    wish()
+    # speak("by the way how are you Jayanth")
+    # speak("do you want to hear some music?")
+    # speak("I am jarvis")
+    # takcommand()
+    while True:
+        # if 1 :
+
+        query = takcommand().lower()
+
+        # logic building for tasks
+
+        if "open notepad" in query:
+            npath = "C:\\WINDOWS\\system32\\notepad.exe"
+            os.startfile(npath)
+
+        elif "open CMD" in query:
+            os.system("start cmd")
+
+        elif "open camera" in query:
+            cap = cv2.VideoCapture(0)
+            while True:
+                ret, img = cap.read()
+                cv2.imshow('webcam', img)
+                k = cv2.waitKey(50)
+                if k == 27:
+                    break;
+            cap.release()
+            cv2.destroyAllWindows()
+
+        elif "play music" in query:
+            music_dir = "F:\\English Songs"
+            songs = os.listdir(music_dir)
+            # rd = random.choice(songs)
+            for song in songs:
+                if song.endswith('.mp3'):
+                    os.startfile(os.path.join(music_dir, song))
+
+        elif "stop music" in query:
+            speak("Stoping music ")
+            os.system("taskkill /f /im wmplayer.exe")
+
+
+        elif "wikipedia" in query:
+            speak("searching in wikipeadia ")
+            query = query.replace("wikipedia", "")
+            results = wikipedia.summary(query, sentences=2)
+            speak("according to wikipedia")
+            speak(results)
+
+        elif "open youtube" in query:
+            webbrowser.open("www.youtube.com")
+
+        elif "open chrome" in query:
+            speak("what do i search on google")
+            cm = takcommand().lower()
+            link = 'www.google.com'
+            webbrowser.register('chrome',None,webbrowser.BackgroundBrowser("C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"))
+            webbrowser.get('chrome')
+            webbrowser.open(f"{cm}")
+            webbrowser.open_new_tab("www.google.com")
+
+        elif  "youtube music" in query:
+            speak("what do i play Jayanth")
+            command = takcommand()
+            songe = command.replace('play','')
+            speak("Playing")
+            pywhatkit.playonyt(songe)
+
+        #elif "open google" in query:
+        #    speak("what should i search on google")
+        #    cm = takcommand().lower()
+        #    chrome = "www.google.com"
+        #    webbrowser.get(chrome)
+        #    webbrowser.open(f"{cm}")
+
+        #elif "close google" in query:
+        #    speak("closing google")
+        #    os.system("taskkill /f /im iexplore.exe")
+
+        elif "go to sleep" in query:
+            speak("As you wish sir")
+            main()
+
+        elif "close notepad" in query:
+            speak("closing notepad")
+            os.system("taskkill /f /im notepad.exe")
+
+        elif "tell me a joke" in query:
+            joke = pyjokes.get_joke()
+            speak(joke)
+
+        elif "restart the system" in query:
+            os.system("shutdown /r /t 5")
+
+        elif "shutdown the system" in query:
+            os.system("shutdown /s /t 5")
+
+        elif "sleep the system" in query:
+            os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+
+        elif "switch the window" in query:
+            pyautogui.keyDown("alt")
+            pyautogui.press("tab")
+            time.sleep(1)
+            pyautogui.keyUp("alt")
+
+        elif "tell me news" in query:
+            speak("please wait while i am getting the latest news")
+            news()
+
+        elif "take a screenshot" in query:
+            speak("Jayanth what should i keep name of this file")
+            name = takcommand().lower()
+            speak("please hold on for a few seconds so that i can take the screenshot")
+            time.sleep(3)
+            img = pyautogui.screenshot()
+            img.save(f"{name},png")
+            speak("I am completed you can say your next command now")
+
+        elif "how are you" in query:
+            speak("I am good ")
+
+        elif "good" in query:
+            speak("feel grate to hear that")
+
+        elif "not good" in query:
+            speak("sorry to hear that but hope you feel better")
+
+        elif "no i don't want to hear music" in query:
+            speak("okay then call me if you need help jayanth ")
+            
+        elif "help" in query:
+            speak("okay Jayanth, ask what can i do")
+
+        elif "what can you do" in query:
+            speak(
+                "These are the funcions i can do 1.open notepad 2.open youtube 3.search in wikipedia 4.play music 5.open google 6.tell joke 7.switch the window and many more")
+
+        elif "play mix music" in query:
+            music_dir = "E:\copy of music"
+            songs = os.listdir(music_dir)
+            # rd = random.choice(songs)
+            for song in songs:
+                if song.endswith('.mp3'):
+                    os.startfile(os.path.join(music_dir, song))
+
+        elif "open discord" in query:
+            webbrowser.open("https://discord.com/channels/@me")
+            
+        elif "open twitter" in query:
+            webbrowser.open("https://twitter.com/home")
+
+        elif "temperature" in query:
+            search = "temperature in hydrabad"
+            url = f"https://www.google.com/search?q={search}"
+            r = requests.get(url)
+            data = BeautifulSoup(r.text, "html.parser")
+            temp = data.find("div", class_="BNeawe").text
+            speak(f"current {search} is {temp}")
+
+        elif "activate how to do mode" in query:
+            speak("How to do mode is activated please tell me what you want to know")
+            how = takcommand()
+            max_results = 1
+            how_to = search_wikihow(how, max_results)
+            assert len(how_to) == 1
+            how_to[0].print()
+            speak(how_to)
+
+        elif "how much power is left" in query or "how much power we have" in query or "battry" in query:
+            # python script showing battery details
+            # function returning time in hh:mm:ss
+            def convertTime(seconds):
+                minutes, seconds = divmod(seconds, 60)
+                hours, minutes = divmod(minutes, 60)
+                return "%d:%02d:%02d" % (hours, minutes, seconds)
+
+            # returns a tuple
+            battery = psutil.sensors_battery()
+
+            print("Battery percentage : ", battery.percent)
+            print("Power plugged in : ", battery.power_plugged)
+
+            # converting seconds to hh:mm:ss
+            print("Battery left : ", convertTime(battery.secsleft))
+
+        elif "set alarm" in query:
+            nn = int(datetime.datetime.now().hour)
+            if nn==18:
+                music_dir = "F:\\English Songs"
+                songs = os.listdir(music_dir)
+                os.startfile(os.path.join(music_dir,songs[0]))
+
+        elif "say hi to bittu" in query:
+            speak("Hi bittu how are you")
+
+        elif "introduce yourself" in query:
+            speak("I am Jarvis made by Jayanth i am a ai system i can do many more like closing notepad search anything open websites extra")
+
+        elif "say hi to mam" in query:
+            speak("Hi mam I am jarvis How are you")
+
+        elif "do maths" in query or "math" in query:
+            speak("give the first number")
+            firstnumber = int(takcommand())
+            speak("give second number")
+            secondnumber = int(takcommand())
+            addition = firstnumber + secondnumber
+            subration = firstnumber - secondnumber
+            division = firstnumber / secondnumber
+            multiplication = firstnumber * secondnumber
+            speak("these are the results for multiplication addition subraction divison")
+            print(addition)
+            print(subration)
+            print(division)
+            print(multiplication)
+
+        elif  "youtube video" in query:
+            speak("what do i play Jayanth")
+            command2 = takcommand()
+            video = command2.replace('play','')
+            speak("Playing")
+            pywhatkit.playonyt(video)
+
+def main():
+    if __name__ == "__main__":
+        while True:
+            permission = takcommand()
+            if "wake up" in permission:
+                speak("Online and ready")
+                TaskExecution()
+
+speak(main())
